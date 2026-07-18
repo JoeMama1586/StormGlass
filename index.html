@@ -61,10 +61,20 @@ header{position:sticky;top:0;z-index:1200;background:rgba(11,17,32,.6);backdrop-
 @media(min-width:1078px){.mapcard{max-width:1050px;margin:0 auto 12px}}
 #map{position:absolute;inset:0;background:#0a0f1c}
 .leaflet-container{font-family:inherit}
-.chips{position:absolute;z-index:800;top:10px;left:10px;right:10px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
-.chips::-webkit-scrollbar{display:none}
-.chips button{flex-shrink:0;background:rgba(15,23,42,.72);backdrop-filter:blur(16px);border:1px solid var(--stroke);color:var(--text);border-radius:100px;padding:7px 14px;font:inherit;font-size:13px;font-weight:500;white-space:nowrap}
-.chips button.on{background:#fff;color:#0b1120;border-color:#fff}
+/* Apple Maps-style controls */
+.mapctl{position:absolute;z-index:900;top:12px;right:12px;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;border:1px solid var(--stroke);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.mapctl button{width:44px;height:44px;background:rgba(15,23,42,.78);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:none;color:var(--text);font-size:19px;display:flex;align-items:center;justify-content:center}
+.mapctl button + button{border-top:1px solid rgba(255,255,255,.1)}
+.mapctl button.on{background:#fff;color:#0b1120}
+.layerpill{position:absolute;z-index:850;top:12px;left:12px;background:rgba(15,23,42,.78);backdrop-filter:blur(20px);border:1px solid var(--stroke);border-radius:100px;padding:8px 15px;font-size:13px;font-weight:600}
+.lpanel{position:absolute;z-index:950;top:12px;right:64px;width:216px;background:rgba(18,27,48,.92);backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);border:1px solid var(--stroke);border-radius:18px;padding:8px;box-shadow:0 20px 60px rgba(0,0,0,.55);transform:translateX(12px);opacity:0;pointer-events:none;transition:.22s cubic-bezier(.2,.9,.3,1)}
+.lpanel.open{transform:none;opacity:1;pointer-events:auto}
+.lpanel .sec{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:8px 10px 4px}
+.lpanel button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:var(--text);border-radius:11px;padding:9px 10px;font:inherit;font-size:14px;font-weight:500;text-align:left}
+.lpanel button .em{font-size:16px;width:22px;text-align:center}
+.lpanel button .ck{margin-left:auto;opacity:0;font-size:13px;color:var(--accent)}
+.lpanel button.on{background:rgba(255,255,255,.1)}
+.lpanel button.on .ck{opacity:1}
 .legendbar{position:absolute;z-index:800;left:12px;bottom:118px;background:rgba(15,23,42,.72);backdrop-filter:blur(16px);border:1px solid var(--stroke);border-radius:12px;padding:7px 11px;font-size:10.5px;color:var(--muted);display:none;align-items:center;gap:8px}
 .legendbar.show{display:flex}
 .legendbar .grad{width:110px;height:7px;border-radius:4px}
@@ -148,17 +158,28 @@ footer{max-width:1050px;margin:0 auto;padding:4px 16px 24px;font-size:11px;color
 
 <div class="mapcard">
   <div id="map"></div>
-  <div class="chips" id="chips">
-    <button data-l="radar" class="on">🌧 Radar</button>
-    <button data-l="sat">🛰 Satellite</button>
-    <button data-l="precip">💧 Precip</button>
-    <button data-l="temp">🌡 Temp</button>
-    <button data-l="wind">💨 Wind</button>
-    <button data-l="humidity">💦 Humidity</button>
-    <button data-l="aqi">🫁 Air quality</button>
-    <button data-l="pressure">⏱ Pressure</button>
-    <button data-l="cape">⚡ Lightning</button>
-    <button data-l="fire">🔥 Fire risk</button>
+  <div class="layerpill" id="layerpill">🌧 Radar</div>
+  <div class="mapctl">
+    <button id="layerbtn" aria-label="Map layers" title="Layers">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2.5 8.5 12 14l9.5-5.5z"/><path d="m2.5 13.5 9.5 5.5 9.5-5.5" opacity=".55"/></svg>
+    </button>
+    <button id="recenter" aria-label="Recenter" title="Recenter">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3.5M12 18.5V22M2 12h3.5M18.5 12H22"/></svg>
+    </button>
+  </div>
+  <div class="lpanel" id="lpanel">
+    <div class="sec">Live imagery</div>
+    <button data-l="radar" class="on"><span class="em">🌧</span>Radar<span class="ck">✓</span></button>
+    <button data-l="sat"><span class="em">🛰</span>Satellite IR<span class="ck">✓</span></button>
+    <div class="sec">Forecast layers · scrub up to 36h</div>
+    <button data-l="precip"><span class="em">💧</span>Precipitation<span class="ck">✓</span></button>
+    <button data-l="temp"><span class="em">🌡</span>Temperature<span class="ck">✓</span></button>
+    <button data-l="wind"><span class="em">💨</span>Wind + direction<span class="ck">✓</span></button>
+    <button data-l="humidity"><span class="em">💦</span>Humidity<span class="ck">✓</span></button>
+    <button data-l="aqi"><span class="em">🫁</span>Air quality<span class="ck">✓</span></button>
+    <button data-l="pressure"><span class="em">⏱</span>Pressure<span class="ck">✓</span></button>
+    <button data-l="cape"><span class="em">⚡</span>Lightning potential<span class="ck">✓</span></button>
+    <button data-l="fire"><span class="em">🔥</span>Fire risk<span class="ck">✓</span></button>
   </div>
   <div class="legendbar" id="legendbar"><span id="legLo"></span><div class="grad" id="legGrad"></div><span id="legHi"></span></div>
   <div class="badge" id="badge"></div>
@@ -363,7 +384,7 @@ function render(){
     if(!S.frames.length){$('#frameTime').textContent='Radar unavailable';$('#frameSub').textContent='';return;}
     if(S.tiles){S.tiles.remove();}
     const f=S.frames[S.idx];
-    S.tiles=L.tileLayer(rvUrl(f,S.layer==='sat'),{opacity:.75,zIndex:450}).addTo(map);
+    S.tiles=L.tileLayer(rvUrl(f,S.layer==='sat'),{opacity:.75,zIndex:450,maxNativeZoom:S.layer==='sat'?5:9,maxZoom:19}).addTo(map);
     const d=new Date(f.time*1000),fut=f.time*1000>Date.now();
     $('#frameTime').textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
     $('#frameSub').textContent=fut?'Nowcast':'Observed radar';
@@ -385,9 +406,15 @@ $('#play').addEventListener('click',()=>{
     const max=+$('#scrub').max;S.idx=(S.idx+1)%(max+1);$('#scrub').value=S.idx;render();
   },S.layer==='radar'||S.layer==='sat'?500:700);
 });
-document.querySelectorAll('#chips button').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('#chips button').forEach(x=>x.classList.remove('on'));
+const NAMES={radar:'🌧 Radar',sat:'🛰 Satellite IR',precip:'💧 Precipitation',temp:'🌡 Temperature',wind:'💨 Wind',humidity:'💦 Humidity',aqi:'🫁 Air quality',pressure:'⏱ Pressure',cape:'⚡ Lightning',fire:'🔥 Fire risk'};
+$('#layerbtn').addEventListener('click',e=>{e.stopPropagation();$('#lpanel').classList.toggle('open');$('#layerbtn').classList.toggle('on');});
+document.addEventListener('click',e=>{if(!e.target.closest('#lpanel')&&!e.target.closest('#layerbtn')){$('#lpanel').classList.remove('open');$('#layerbtn').classList.remove('on');}});
+$('#recenter').addEventListener('click',()=>{map.setView([S.lat,S.lon],5);});
+document.querySelectorAll('#lpanel button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#lpanel button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');S.layer=b.dataset.l;
+  $('#layerpill').textContent=NAMES[S.layer];
+  $('#lpanel').classList.remove('open');$('#layerbtn').classList.remove('on');
   const L2=LAYERS[S.layer];
   if(L2){S.metric=S.layer;$('#trendName').textContent=L2.name.toLowerCase();}
   buildTimeline();S.wx&&renderChart();
